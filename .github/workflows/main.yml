@@ -35,10 +35,6 @@ on:
         description: 'if dont want ksu then leave blank'
         required: false
         default: 'both'
-      TG_RECIPENT:
-        description: 'idk'
-        required: false
-        default: ''
       CONTAINER:
         description: 'if you know you know'
         required: true
