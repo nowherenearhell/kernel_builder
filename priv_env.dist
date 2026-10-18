@@ -1,10 +1,3 @@
-# your telegram bot token
-export BOT_TOKEN="hdoznfidvyfnfischsizbiajefb"
-
-# your telegram chatroom's id
-# in bot api
-export CHAT_ID="72769420"
-
 # your local kernel dir
 export KDIR=kernel
 
@@ -12,7 +5,7 @@ export KDIR=kernel
 kernel_repo="https://github.com/TelegramAt25/empty_kernel_xiaomi_blossom"
 
 # the branch you want to use in the repo above
-kernel_branch="enanan"
+kernel_branch="yoka_rb3"
 
 # whether you want ksu patched in at build time or not
 # leave blank for "no", "both" for both ksu and non ksu, anything else for "yes"

@@ -13,27 +13,11 @@ source ./$1priv_env || { echo "$RUN_ID: incorrect envset: nonexistent priv_env, 
 
 RUN_ID=$(shuf -ern4 {0..9} | sha1sum - | head -c 8)
 RUN_START=$(date +"%s")
-#ALT_RECIPENT=$2
-#if [ ! -z $ALT_RECIPENT ]; then
-#  CHAT_ID="$ALT_RECIPENT"
-#fi
-bash tg_utils.sh msg "$RUN_ID: run started"
-bash tg_utils.sh msg "$RUN_ID: using envset $1"
 
 [ -z "$KDIR" ] && { echo "$RUN_ID: incorrect priv_env: KDIR was not set, bailing" && exit 127 ; } || :
 
-bash tg_utils.sh msg "$RUN_ID: kernel dir: $KDIR"
-
-if [ ! -z "$NOTE" ]; then
-  bash tg_utils.sh msg "$NOTE"
-fi
-if [ ! -z "$VERBOSE" ]; then
-  bash tg_utils.sh msg "host: $(cat /etc/os-release | grep PRETTY_NAME | cut -d'=' -f2)%nlfree disk space: $(df --sync -BM --output=avail / | grep -v Avail)"
-  bash tg_utils.sh msg "cloning kernel source%nlrepo: $kernel_repo%nlbranch: $kernel_branch"
-fi
-
 if [ ! -d "$KDIR" ]; then
-  git clone ${kernel_repo} -b ${kernel_branch} "$KDIR" || exit 1
+  git clone ${kernel_repo} -b ${kernel_branch} --single-branch "$KDIR" || exit 1
   cd "$KDIR"
   git submodule update --init --recursive
 else
@@ -50,31 +34,21 @@ if [[ ! -z "$2" ]]; then rm -rf out ../zipper; fi
 
 source ../$1env || { bash tg_utils.sh msg "$RUN_ID: incorrect envset: nonexistent env, bailing" && exit 127 ; }
 
-bash ../tg_utils.sh msg "kernel name: ${kernel_name}%nlkernel ver: ${kernel_ver}%nlkernel head commit: ${kernel_head}%nldefconfig: ${defconfig}"
-
 case $PATCH_KSU in
   "both" )
-    bash ../tg_utils.sh msg "running compilation script(s): $COMPILERS"
     bash ../build.sh "$COMPILERS" $1
-    bash ../tg_utils.sh msg "KernelSU patching enabled, patching"
     bash ../ksu/applyPatches.sh $1 || exit 1
-    bash ../tg_utils.sh msg "running compilation script(s): $COMPILERS"
     bash ../build.sh "$COMPILERS" $1
   ;;
   "sus" )
-    bash ../tg_utils.sh msg "KernelSU and SuSFS patching enabled, patching"
     bash ../ksu/asus.sh
-    bash ../tg_utils.sh msg "running compilation script(s): $COMPILERS"
     bash ../build.sh "$COMPILERS"
   ;;
   "" )
-    bash ../tg_utils.sh msg "running compilation script(s): $COMPILERS"
     bash ../build.sh "$COMPILERS" $1
   ;;
   * )
-    bash ../tg_utils.sh msg "KernelSU patching enabled, patching"
     bash ../ksu/applyPatches.sh $1 || exit 1
-    bash ../tg_utils.sh msg "running compilation script(s): $COMPILERS"
     bash ../build.sh "$COMPILERS" $1
   ;;
 esac
@@ -82,14 +56,12 @@ esac
 if [[ $(ls *.log) ]]; then
   for file in *.log ; do
     if [ -e "${file}.info" ]; then
-      bash ../tg_utils.sh up "${file}" "$(cat "${file}.info")"
       export RES=0
     fi
   done
 fi
 if [[ $(ls *.zip) ]]; then
   for file in *.zip ; do
-    bash ../tg_utils.sh up "${file}" "$(cat "${file}.info")"
     export RES=1
   done
 fi
@@ -101,6 +73,5 @@ fi
 
 RUN_END=$(date +"%s")
 WDIFF=$((RUN_END - RUN_START))
-[ "$RES" = "0" ] && bash ../tg_utils.sh msg "$RUN_ID: run failed in $((WDIFF / 60))m, $((WDIFF % 60))s" || bash ../tg_utils.sh msg "$RUN_ID: run ended in $((WDIFF / 60))m, $((WDIFF % 60))s"
 
 cd "$OLDDIR"
