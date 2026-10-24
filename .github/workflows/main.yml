@@ -101,20 +101,10 @@ jobs:
             esac
 
         - name: upload
-          run: |
-            cd kernel
-            if [[ $(ls *.zip) ]]; then
-              for file in *.zip ; do
-                bash ../tg_utils.sh up "${file}" "$(cat "${file}.info")"
-              done
-            fi
-            if [[ $(ls *.log) ]]; then
-              for file in *.log ; do
-                if [ -e "${file}.info" ]; then
-                  bash ../tg_utils.sh up "${file}" "$(cat "${file}.info")"
-                fi
-              done
-            fi
+          uses: actions/upload-artifact@v4
+          with:
+            name: *.zip
+            path: kernel
         - name: if it fails
           if: ${{ failure() }}
           run: |
